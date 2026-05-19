@@ -28,7 +28,7 @@ venv/
 ENV/
 env/
 .venv
-.env.example
+
 
 # IDE
 .vscode/
@@ -42,6 +42,8 @@ env/
 .env
 .env.local
 .env.*.local
+.env.example
+**/.env.example
 
 # Testing
 .pytest_cache/

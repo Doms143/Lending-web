@@ -26,7 +26,7 @@ async def get_current_admin(current_user: dict = Depends(get_current_user)):
     settings = get_settings()
     user_email = (current_user.get("email") or "").lower()
 
-    if current_user.get("is_admin") or user_email in settings.admin_emails:
+    if current_user.get("is_admin") or user_email in settings.admin_email_list:
         return current_user
 
     raise HTTPException(status_code=403, detail="Admin access required")

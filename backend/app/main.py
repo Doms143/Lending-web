@@ -44,7 +44,7 @@ def create_app() -> FastAPI:
     # Add CORS middleware
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=settings.cors_origins,
+        allow_origins=settings.cors_origin_list,
         allow_credentials=True,
         allow_methods=["GET", "POST", "PUT"],
         allow_headers=["Authorization", "Content-Type"],
@@ -67,6 +67,19 @@ def create_app() -> FastAPI:
             "status": "running",
             "version": settings.api_version,
             "environment": settings.environment
+        }
+
+    @app.get("/api/v1/config-check")
+    async def config_check():
+        return {
+            "status": "ok",
+            "environment": settings.environment,
+            "supabase_url_configured": bool(settings.supabase_url),
+            "supabase_key_configured": bool(settings.supabase_key),
+            "google_sheets_id_configured": bool(settings.google_sheets_id),
+            "google_credentials_configured": bool(settings.google_credentials_json or settings.google_credentials_path),
+            "admin_emails_configured": bool(settings.admin_email_list),
+            "cors_origins": settings.cors_origin_list,
         }
     
     # Error handler

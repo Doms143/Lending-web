@@ -3,6 +3,7 @@ from pydantic_settings import BaseSettings
 from pydantic import field_validator
 from typing import List
 import os
+import json
 from functools import lru_cache
 
 
@@ -21,7 +22,7 @@ class Settings(BaseSettings):
     supabase_url: str = os.getenv("SUPABASE_URL", "")
     supabase_key: str = os.getenv("SUPABASE_KEY", "")
     supabase_service_role_key: str = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
-    admin_emails: List[str] = []
+    admin_emails: str = ""
     
     # Google
     google_sheets_id: str = os.getenv("GOOGLE_SHEETS_ID", "")
@@ -30,11 +31,31 @@ class Settings(BaseSettings):
     google_credentials_json: str = os.getenv("GOOGLE_CREDENTIALS_JSON", "")
     
     # CORS
-    cors_origins: List[str] = [
-        "http://localhost:3000",
-        "http://localhost:3001",
-        "http://localhost:5173",  # Vite default
-    ]
+    cors_origins: str = "http://localhost:3000,http://localhost:3001,http://localhost:5173"
+
+    @property
+    def admin_email_list(self) -> List[str]:
+        return [
+            email.strip().lower()
+            for email in self.admin_emails.split(",")
+            if email.strip()
+        ]
+
+    @property
+    def cors_origin_list(self) -> List[str]:
+        value = self.cors_origins.strip()
+
+        if not value:
+            return []
+
+        if value.startswith("["):
+            return json.loads(value)
+
+        return [
+            origin.strip()
+            for origin in value.split(",")
+            if origin.strip()
+        ]
 
     @field_validator("debug", mode="before")
     @classmethod
@@ -51,41 +72,6 @@ class Settings(BaseSettings):
 
         return value
 
-    @field_validator("admin_emails", mode="before")
-    @classmethod
-    def parse_admin_emails(cls, value):
-        if not value:
-            return []
-
-        if isinstance(value, str):
-            return [
-                email.strip().lower()
-                for email in value.split(",")
-                if email.strip()
-            ]
-
-        return value
-
-    @field_validator("cors_origins", mode="before")
-    @classmethod
-    def parse_cors_origins(cls, value):
-        if not value:
-            return value
-
-        if isinstance(value, str):
-            stripped = value.strip()
-            if stripped.startswith("["):
-                import json
-                return json.loads(stripped)
-
-            return [
-                origin.strip()
-                for origin in stripped.split(",")
-                if origin.strip()
-            ]
-
-        return value
-    
     class Config:
         env_file = ".env"
         case_sensitive = False

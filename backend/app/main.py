@@ -5,6 +5,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from slowapi.errors import RateLimitExceeded
 import logging
+import json
 from app.core.config import get_settings
 from app.features import applications_router, images_router, admin_router, auth_router
 from app.features.auth.routes import limiter as auth_limiter
@@ -71,6 +72,19 @@ def create_app() -> FastAPI:
 
     @app.get("/api/v1/config-check")
     async def config_check():
+        google_credentials_json_valid = False
+        google_credentials_client_email_configured = False
+
+        if settings.google_credentials_json:
+            try:
+                google_credentials = json.loads(settings.google_credentials_json)
+                google_credentials_json_valid = True
+                google_credentials_client_email_configured = bool(google_credentials.get("client_email"))
+            except json.JSONDecodeError:
+                google_credentials_json_valid = False
+        else:
+            google_credentials_json_valid = False
+
         return {
             "status": "ok",
             "environment": settings.environment,
@@ -78,6 +92,9 @@ def create_app() -> FastAPI:
             "supabase_key_configured": bool(settings.supabase_key),
             "google_sheets_id_configured": bool(settings.google_sheets_id),
             "google_credentials_configured": bool(settings.google_credentials_json or settings.google_credentials_path),
+            "google_credentials_json_configured": bool(settings.google_credentials_json),
+            "google_credentials_json_valid": google_credentials_json_valid,
+            "google_credentials_client_email_configured": google_credentials_client_email_configured,
             "admin_emails_configured": bool(settings.admin_email_list),
             "cors_origins": settings.cors_origin_list,
         }

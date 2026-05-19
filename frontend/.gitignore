@@ -12,3 +12,5 @@ coverage
 .idea
 .vscode
 *.pem
+.env.example
+**/.env.example

@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     google_sheets_id: str = os.getenv("GOOGLE_SHEETS_ID", "")
     google_form_response_sheet: str = os.getenv("GOOGLE_FORM_RESPONSE_SHEET", "Form Responses 1")
     google_credentials_path: str = os.getenv("GOOGLE_CREDENTIALS_PATH", "./credentials.json")
+    google_credentials_json: str = os.getenv("GOOGLE_CREDENTIALS_JSON", "")
     
     # CORS
     cors_origins: List[str] = [
@@ -61,6 +62,26 @@ class Settings(BaseSettings):
                 email.strip().lower()
                 for email in value.split(",")
                 if email.strip()
+            ]
+
+        return value
+
+    @field_validator("cors_origins", mode="before")
+    @classmethod
+    def parse_cors_origins(cls, value):
+        if not value:
+            return value
+
+        if isinstance(value, str):
+            stripped = value.strip()
+            if stripped.startswith("["):
+                import json
+                return json.loads(stripped)
+
+            return [
+                origin.strip()
+                for origin in stripped.split(",")
+                if origin.strip()
             ]
 
         return value

@@ -18,7 +18,7 @@ images_router = APIRouter(prefix="/api/v1/applications", tags=["applications-ima
 def get_application_service() -> ApplicationService:
     """Dependency to get application service"""
     settings = get_settings()
-    google_service = GoogleSheetsService(settings.google_credentials_path)
+    google_service = GoogleSheetsService(settings.google_credentials_path, settings.google_credentials_json)
     supabase_service = SupabaseService(settings.supabase_url, settings.supabase_key)
     return ApplicationService(google_service, supabase_service, settings.google_sheets_id, settings.google_form_response_sheet)
 
@@ -69,7 +69,7 @@ async def proxy_image(file_id: str, _user: dict = Depends(get_current_user_token
     """Proxy Google Drive images through backend using service account"""
     try:
         settings = get_settings()
-        drive_service = GoogleDriveService(settings.google_credentials_path)
+        drive_service = GoogleDriveService(settings.google_credentials_path, settings.google_credentials_json)
         content, mime_type = drive_service.download_file(file_id)
         return Response(content=content, media_type=mime_type, headers={
             "Cache-Control": "public, max-age=86400"

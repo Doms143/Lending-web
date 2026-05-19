@@ -1,6 +1,7 @@
 """Google Sheets integration service"""
 import os
 import pickle
+import json
 from google.auth.transport.requests import Request
 from google.oauth2.service_account import Credentials
 from google.oauth2.credentials import Credentials as UserCredentials
@@ -18,16 +19,35 @@ SCOPES = [
 ]
 
 
+def _load_service_account_credentials(credentials_path: str, credentials_json: str = ""):
+    if credentials_json:
+        return Credentials.from_service_account_info(
+            json.loads(credentials_json),
+            scopes=SCOPES
+        )
+
+    if os.path.exists(credentials_path):
+        return Credentials.from_service_account_file(
+            credentials_path,
+            scopes=SCOPES
+        )
+
+    logger.warning(f"Credentials file not found: {credentials_path}")
+    return None
+
+
 class GoogleSheetsService:
     """Service for interacting with Google Sheets"""
     
-    def __init__(self, credentials_path: str):
+    def __init__(self, credentials_path: str, credentials_json: str = ""):
         """Initialize Google Sheets service
         
         Args:
             credentials_path: Path to Google credentials JSON file
+            credentials_json: Google service account JSON from an environment variable
         """
         self.credentials_path = credentials_path
+        self.credentials_json = credentials_json
         self.creds = None
         self.sheets_service = None
         self.drive_service = None
@@ -36,14 +56,8 @@ class GoogleSheetsService:
     def _authenticate(self):
         """Authenticate with Google API"""
         try:
-            if os.path.exists(self.credentials_path):
-                # Service account credentials
-                self.creds = Credentials.from_service_account_file(
-                    self.credentials_path,
-                    scopes=SCOPES
-                )
-            else:
-                logger.warning(f"Credentials file not found: {self.credentials_path}")
+            self.creds = _load_service_account_credentials(self.credentials_path, self.credentials_json)
+            if not self.creds:
                 return
             
             self.sheets_service = build('sheets', 'v4', credentials=self.creds)
@@ -230,13 +244,15 @@ class GoogleSheetsService:
 class GoogleDriveService:
     """Service for accessing Google Drive files (images)"""
     
-    def __init__(self, credentials_path: str):
+    def __init__(self, credentials_path: str, credentials_json: str = ""):
         """Initialize Google Drive service
         
         Args:
             credentials_path: Path to Google credentials JSON file
+            credentials_json: Google service account JSON from an environment variable
         """
         self.credentials_path = credentials_path
+        self.credentials_json = credentials_json
         self.creds = None
         self.drive_service = None
         self._authenticate()
@@ -244,10 +260,9 @@ class GoogleDriveService:
     def _authenticate(self):
         """Authenticate with Google Drive API"""
         try:
-            self.creds = Credentials.from_service_account_file(
-                self.credentials_path,
-                scopes=SCOPES
-            )
+            self.creds = _load_service_account_credentials(self.credentials_path, self.credentials_json)
+            if not self.creds:
+                return
             self.drive_service = build('drive', 'v3', credentials=self.creds)
             logger.info("Successfully authenticated with Google Drive")
         except Exception as e:

@@ -17,6 +17,9 @@ limiter = Limiter(key_func=get_remote_address)
 
 def get_supabase() -> SupabaseService:
     settings = get_settings()
+    if not settings.supabase_url or not settings.supabase_key:
+        logger.error("Supabase configuration is missing")
+        raise HTTPException(status_code=500, detail="Authentication service is not configured")
     return SupabaseService(settings.supabase_url, settings.supabase_key)
 
 

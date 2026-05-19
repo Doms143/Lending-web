@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Card, Button, Alert } from '../../components/Common'
 import { Icon } from '../../components/Icon'
 import { authApi } from '../../utils/apiService'
+import { API_BASE_URL } from '../../utils/api'
 import './auth.css'
 
 export const Login = ({ onLoginSuccess }) => {
@@ -27,6 +28,11 @@ export const Login = ({ onLoginSuccess }) => {
       localStorage.setItem('userEmail', email)
       onLoginSuccess()
     } catch (err) {
+      if (!err.response) {
+        setError(`Cannot reach backend API at ${API_BASE_URL}. Check Vercel VITE_API_URL and Railway CORS.`)
+        return
+      }
+
       setError(err.response?.data?.detail || 'Invalid email or password')
     } finally {
       setLoading(false)

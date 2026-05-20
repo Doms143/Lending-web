@@ -78,8 +78,8 @@ async def proxy_image(file_id: str, _user: dict = Depends(get_current_user)):
             "Cache-Control": "public, max-age=86400"
         })
     except Exception as e:
-        logger.error(f"Failed to proxy image {file_id}: {str(e)}")
-        raise HTTPException(status_code=404, detail="Image not found")
+        logger.error(f"Failed to proxy image {file_id}: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Image proxy error: {str(e)}")
 
 
 @router.get("/{app_id}", response_model=ApplicationResponse)

@@ -6,8 +6,8 @@ google-auth-httplib2==0.2.0
 google-api-python-client==2.107.0
 python-multipart==0.0.6
 supabase==2.4.1
-pydantic==2.5.0
-pydantic-settings==2.1.0
+pydantic==2.10.0
+pydantic-settings==2.7.0
 email-validator==2.1.0.post1
 sqlalchemy==2.0.23
 psycopg2-binary>=2.9.10,<3.0

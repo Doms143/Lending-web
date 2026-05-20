@@ -19,7 +19,10 @@ def get_application_service() -> ApplicationService:
     """Dependency to get application service"""
     settings = get_settings()
     google_service = GoogleSheetsService(settings.google_credentials_path, settings.google_credentials_json)
-    supabase_service = SupabaseService(settings.supabase_url, settings.supabase_key)
+    supabase_service = SupabaseService(
+        settings.supabase_url,
+        settings.supabase_service_role_key or settings.supabase_key
+    )
     return ApplicationService(google_service, supabase_service, settings.google_sheets_id, settings.google_form_response_sheet)
 
 

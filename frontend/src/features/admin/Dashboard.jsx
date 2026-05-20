@@ -34,7 +34,12 @@ export const Dashboard = ({ onSelectApp, onViewApplications }) => {
       setRecentApplications(recentData.data || [])
       setPendingApplications(pendingData.data || [])
     } catch (err) {
-      setDashboardError('Check that the backend is running, then try again.')
+      const status = err.response?.status
+      const detail = err.response?.data?.detail
+      const message = detail
+        ? `Backend returned ${status || 'an error'}: ${detail}`
+        : err.message || 'Check that the backend is running, then try again.'
+      setDashboardError(message)
       console.error(err)
     } finally {
       setLoading(false)

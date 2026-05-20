@@ -90,6 +90,7 @@ def create_app() -> FastAPI:
             "environment": settings.environment,
             "supabase_url_configured": bool(settings.supabase_url),
             "supabase_key_configured": bool(settings.supabase_key),
+            "supabase_service_role_key_configured": bool(settings.supabase_service_role_key),
             "google_sheets_id_configured": bool(settings.google_sheets_id),
             "google_credentials_configured": bool(settings.google_credentials_json or settings.google_credentials_path),
             "google_credentials_json_configured": bool(settings.google_credentials_json),

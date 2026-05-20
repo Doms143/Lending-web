@@ -14,7 +14,10 @@ router = APIRouter(prefix="/api/v1/admin", tags=["admin"], dependencies=[Depends
 def get_supabase_service() -> SupabaseService:
     """Dependency to get Supabase service"""
     settings = get_settings()
-    return SupabaseService(settings.supabase_url, settings.supabase_key)
+    return SupabaseService(
+        settings.supabase_url,
+        settings.supabase_service_role_key or settings.supabase_key
+    )
 
 
 @router.post("/applications/{app_id}/approve")

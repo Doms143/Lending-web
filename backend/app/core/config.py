@@ -1,10 +1,13 @@
 """Application configuration"""
+import logging
 from pydantic_settings import BaseSettings
 from pydantic import field_validator
 from typing import List
 import os
 import json
 from functools import lru_cache
+
+logger = logging.getLogger(__name__)
 
 
 class Settings(BaseSettings):
@@ -81,4 +84,9 @@ class Settings(BaseSettings):
 @lru_cache()
 def get_settings() -> Settings:
     """Get cached settings instance"""
-    return Settings()
+    settings = Settings()
+    if settings.supabase_service_role_key:
+        logger.info(f"Using Supabase service_role key (starts with: {settings.supabase_service_role_key[:20]}...)")
+    else:
+        logger.warning("Supabase service_role key NOT set - falling back to anon key (RLS may block operations)")
+    return settings

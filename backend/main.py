@@ -10,8 +10,8 @@ if __name__ == "__main__":
     
     uvicorn.run(
         "app.main:app",
-        host=settings.api_host,
-        port=settings.api_port,
+        host=os.getenv("HOST", "0.0.0.0" if settings.environment == "production" else settings.api_host),
+        port=int(os.getenv("PORT", settings.api_port)),
         reload=settings.debug,
         log_level="info"
     )

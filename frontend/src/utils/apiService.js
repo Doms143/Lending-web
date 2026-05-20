@@ -52,6 +52,11 @@ export const applicationApi = {
     return response.data
   },
 
+  getSyncStatus: async () => {
+    const response = await apiClient.get('/api/v1/admin/sync/status')
+    return response.data
+  },
+
   downloadAsCSV: async (data, filename = 'applications.csv') => {
     const csv = convertToCSV(data)
     const element = document.createElement('a')

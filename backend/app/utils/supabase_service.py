@@ -74,6 +74,24 @@ class SupabaseService:
         except Exception as e:
             logger.error(f"Failed to get synced application: {str(e)}")
             raise
+
+    def get_applications_sync_status(self) -> Dict[str, Any]:
+        try:
+            records = self.get_synced_applications(limit=5000, offset=0)
+            last_synced_at = None
+
+            for record in records:
+                synced_at = record.get('synced_at')
+                if synced_at and (not last_synced_at or synced_at > last_synced_at):
+                    last_synced_at = synced_at
+
+            return {
+                "application_count": len(records),
+                "last_synced_at": last_synced_at,
+            }
+        except Exception as e:
+            logger.error(f"Failed to get applications sync status: {str(e)}")
+            raise
     
     def get_application_status(self, app_id: str) -> Optional[Dict[str, Any]]:
         try:

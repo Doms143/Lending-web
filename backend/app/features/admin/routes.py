@@ -53,6 +53,17 @@ async def sync_google_sheets(
         raise HTTPException(status_code=500, detail=f"Failed to sync Google Sheets: {str(e)}")
 
 
+@router.get("/sync/status")
+async def get_sync_status(
+    service: SupabaseService = Depends(get_supabase_service)
+):
+    try:
+        return service.get_applications_sync_status()
+    except Exception as e:
+        logger.error(f"Failed to get sync status: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to get sync status")
+
+
 @router.post("/applications/{app_id}/approve")
 async def approve_application(
     app_id: str,

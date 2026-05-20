@@ -15,6 +15,7 @@ export const Dashboard = ({ onSelectApp, onViewApplications }) => {
   const [exportLoading, setExportLoading] = useState(false)
   const [syncLoading, setSyncLoading] = useState(false)
   const [syncMessage, setSyncMessage] = useState(null)
+  const [syncStatus, setSyncStatus] = useState(null)
   const [showExportOptions, setShowExportOptions] = useState(false)
 
   useEffect(() => {
@@ -35,6 +36,13 @@ export const Dashboard = ({ onSelectApp, onViewApplications }) => {
       setSummary(summaryData)
       setRecentApplications(recentData.data || [])
       setPendingApplications(pendingData.data || [])
+
+      try {
+        const status = await applicationApi.getSyncStatus()
+        setSyncStatus(status)
+      } catch (syncErr) {
+        console.error(syncErr)
+      }
     } catch (err) {
       const status = err.response?.status
       const detail = err.response?.data?.detail
@@ -100,6 +108,8 @@ export const Dashboard = ({ onSelectApp, onViewApplications }) => {
       const result = await applicationApi.syncGoogleSheets()
       setSyncMessage(`Synced ${result.synced_count || 0} applications from Google Sheets.`)
       await fetchDashboardData()
+      const status = await applicationApi.getSyncStatus()
+      setSyncStatus(status)
     } catch (err) {
       const status = err.response?.status
       const detail = err.response?.data?.detail
@@ -128,6 +138,15 @@ export const Dashboard = ({ onSelectApp, onViewApplications }) => {
           Sync Google Sheets
         </Button>
       </div>
+
+      {syncStatus && (
+        <div className="sync-status-bar">
+          <span>{syncStatus.application_count || 0} synced applications</span>
+          <span>
+            Last sync: {syncStatus.last_synced_at ? formatDate(syncStatus.last_synced_at) : 'Not synced yet'}
+          </span>
+        </div>
+      )}
 
       {syncMessage && (
         <Alert

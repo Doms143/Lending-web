@@ -41,44 +41,25 @@ class ApplicationService:
             Tuple of (applications list, total count)
         """
         try:
-            # Get form responses from Google Sheets
-            responses = self.google_service.parse_form_responses(
-                self.spreadsheet_id,
-                self.sheet_name
-            )
-            
-            # Get status data from Supabase for all applications
-            all_statuses = self.supabase_service.get_all_applications_status()
+            records = self.supabase_service.get_synced_applications(limit=5000, offset=0)
+            all_statuses = self.supabase_service.get_all_applications_status(limit=5000)
             status_map = {s['app_id']: s for s in all_statuses}
-            
-            # Build application list with status
+
             applications = []
-            for response in responses:
-                app_id = self._generate_app_id(response.get('email', ''))
-                status_data = status_map.get(app_id, {})
-                
-                app_list = ApplicationListResponse(
-                    id=app_id,
-                    full_name=response.get('full name___2', ''),
-                    email=response.get('email', ''),
-                    amount=self._parse_amount(response.get('amount')),
-                    status=status_data.get('status', 'pending'),
-                    submitted_at=self._parse_date(response.get('timestamp', '')),
-                    status_updated_at=self._parse_date(status_data.get('status_updated_at'))
-                )
-                
-                # Apply status filter
+            for record in records:
+                status_data = status_map.get(record.get('id'), {})
+                app_list = self._build_list_response_from_record(record, status_data)
+
                 if status_filter and app_list.status != status_filter:
                     continue
-                
+
                 applications.append(app_list)
-            
-            # Sort by submitted date descending
+
             applications.sort(key=lambda x: x.submitted_at, reverse=True)
-            
+
             total_count = len(applications)
             paginated_apps = applications[offset:offset + limit]
-            
+
             return paginated_apps, total_count
         
         except Exception as e:
@@ -95,67 +76,13 @@ class ApplicationService:
             Detailed application data
         """
         try:
-            # Get form responses
-            responses = self.google_service.parse_form_responses(
-                self.spreadsheet_id,
-                self.sheet_name
-            )
-            
-            # Find matching application by email/ID
-            app_data = None
-            for response in responses:
-                if self._generate_app_id(response.get('email', '')) == app_id:
-                    app_data = response
-                    break
-            
-            if not app_data:
+            record = self.supabase_service.get_synced_application(app_id)
+
+            if not record:
                 raise ApplicationNotFound(f"Application {app_id} not found")
-            
-            # Get status from Supabase
+
             status_data = self.supabase_service.get_application_status(app_id) or {}
-            
-            # Build detailed response
-            app_response = ApplicationResponse(
-                id=app_id,
-                email=app_data.get('email', ''),
-                full_name=app_data.get('full name___2', ''),
-                date_of_birth=app_data.get('date of birth___3', ''),
-                age=int(app_data.get('age___4', 0)) if app_data.get('age___4') else 0,
-                phone_number=app_data.get('phone number', ''),
-                source_of_income=app_data.get('source of income', ''),
-                address={
-                    'street': app_data.get('street', ''),
-                    'barangay': app_data.get('barangay', ''),
-                    'city_municipality': app_data.get('city/municipality', ''),
-                    'province': app_data.get('province', ''),
-                    'postal_code': app_data.get('postal code', '')
-                },
-                amount=self._parse_amount(app_data.get('amount')),
-                duration=app_data.get('duration', ''),
-                interest=self._parse_amount(app_data.get('interest')),
-                reason_for_borrowing=app_data.get('reason for borrowing', ''),
-                facebook_link=app_data.get('facebook link___16', ''),
-                instagram_link=app_data.get('instagram link___17', ''),
-                contact_person_1={
-                    'full_name': app_data.get('full name___21', ''),
-                    'facebook_link': app_data.get('facebook link___22', ''),
-                    'mobile_number': app_data.get('mobile number___24', ''),
-                    'relationship': app_data.get('relationship___25', '')
-                },
-                contact_person_2={
-                    'full_name': app_data.get('full name___26', ''),
-                    'facebook_link': app_data.get('facebook link___27', ''),
-                    'mobile_number': app_data.get('mobile number___29', ''),
-                    'relationship': app_data.get('relationship___30', '')
-                } if app_data.get('full name___26') else None,
-                status=status_data.get('status', 'pending'),
-                submitted_at=self._parse_date(app_data.get('timestamp', '')),
-                status_updated_at=self._parse_date(status_data.get('status_updated_at')),
-                admin_notes=status_data.get('admin_notes', ''),
-                images=self._extract_images(app_data)
-            )
-            
-            return app_response
+            return self._build_detail_response_from_record(record, status_data)
         
         except Exception as e:
             logger.error(f"Failed to get application detail: {str(e)}")
@@ -168,26 +95,20 @@ class ApplicationService:
             Dashboard summary
         """
         try:
-            # Get all applications
-            responses = self.google_service.parse_form_responses(
-                self.spreadsheet_id,
-                self.sheet_name
-            )
-            
-            # Get all statuses from Supabase
-            all_statuses = self.supabase_service.get_all_applications_status()
+            records = self.supabase_service.get_synced_applications(limit=5000, offset=0)
+            all_statuses = self.supabase_service.get_all_applications_status(limit=5000)
             status_map = {s['app_id']: s for s in all_statuses}
-            
-            total = len(responses)
+
+            total = len(records)
             pending = 0
             approved = 0
             rejected = 0
             total_amount = 0.0
-            
-            for response in responses:
-                app_id = self._generate_app_id(response.get('email', ''))
+
+            for record in records:
+                app_id = record.get('id', '')
                 status = status_map.get(app_id, {}).get('status', 'pending')
-                amount = self._parse_amount(response.get('amount'))
+                amount = self._parse_amount(record.get('amount'))
                 
                 if status == 'pending':
                     pending += 1
@@ -209,6 +130,119 @@ class ApplicationService:
         except Exception as e:
             logger.error(f"Failed to get dashboard summary: {str(e)}")
             raise GoogleSheetsError(f"Failed to retrieve dashboard summary: {str(e)}")
+
+    def sync_google_sheets_to_database(self) -> Dict[str, Any]:
+        """Read Google Sheets rows and upsert normalized application records into Supabase."""
+        try:
+            responses = self.google_service.parse_form_responses(
+                self.spreadsheet_id,
+                self.sheet_name
+            )
+
+            records = [
+                self._build_application_record(response)
+                for response in responses
+                if response.get('email')
+            ]
+
+            saved = self.supabase_service.upsert_applications(records)
+
+            return {
+                "success": True,
+                "source_count": len(responses),
+                "synced_count": len(saved) if saved else len(records),
+            }
+        except Exception as e:
+            logger.error(f"Failed to sync Google Sheets to database: {str(e)}")
+            raise GoogleSheetsError(f"Failed to sync Google Sheets: {str(e)}")
+
+    def _build_application_record(self, app_data: Dict[str, Any]) -> Dict[str, Any]:
+        submitted_at = self._parse_date(app_data.get('timestamp', ''))
+        contact_person_2 = {
+            'full_name': app_data.get('full name___26', ''),
+            'facebook_link': app_data.get('facebook link___27', ''),
+            'mobile_number': app_data.get('mobile number___29', ''),
+            'relationship': app_data.get('relationship___30', '')
+        } if app_data.get('full name___26') else None
+
+        return {
+            "id": self._generate_app_id(app_data.get('email', '')),
+            "email": app_data.get('email', ''),
+            "full_name": app_data.get('full name___2', ''),
+            "date_of_birth": app_data.get('date of birth___3', ''),
+            "age": int(app_data.get('age___4', 0)) if app_data.get('age___4') else 0,
+            "phone_number": app_data.get('phone number', ''),
+            "source_of_income": app_data.get('source of income', ''),
+            "address": {
+                'street': app_data.get('street', ''),
+                'barangay': app_data.get('barangay', ''),
+                'city_municipality': app_data.get('city/municipality', ''),
+                'province': app_data.get('province', ''),
+                'postal_code': app_data.get('postal code', '')
+            },
+            "amount": self._parse_amount(app_data.get('amount')),
+            "duration": app_data.get('duration', ''),
+            "interest": self._parse_amount(app_data.get('interest')),
+            "reason_for_borrowing": app_data.get('reason for borrowing', ''),
+            "facebook_link": app_data.get('facebook link___16', ''),
+            "instagram_link": app_data.get('instagram link___17', ''),
+            "contact_person_1": {
+                'full_name': app_data.get('full name___21', ''),
+                'facebook_link': app_data.get('facebook link___22', ''),
+                'mobile_number': app_data.get('mobile number___24', ''),
+                'relationship': app_data.get('relationship___25', '')
+            },
+            "contact_person_2": contact_person_2,
+            "images": self._extract_images(app_data),
+            "submitted_at": submitted_at.isoformat(),
+            "row_index": app_data.get('row_index'),
+            "raw_data": app_data,
+            "synced_at": datetime.now().isoformat(),
+        }
+
+    def _build_list_response_from_record(
+        self,
+        record: Dict[str, Any],
+        status_data: Dict[str, Any]
+    ) -> ApplicationListResponse:
+        return ApplicationListResponse(
+            id=record.get('id', ''),
+            full_name=record.get('full_name', ''),
+            email=record.get('email', ''),
+            amount=self._parse_amount(record.get('amount')),
+            status=status_data.get('status', 'pending'),
+            submitted_at=self._parse_date(record.get('submitted_at')),
+            status_updated_at=self._parse_date(status_data.get('status_updated_at'))
+        )
+
+    def _build_detail_response_from_record(
+        self,
+        record: Dict[str, Any],
+        status_data: Dict[str, Any]
+    ) -> ApplicationResponse:
+        return ApplicationResponse(
+            id=record.get('id', ''),
+            email=record.get('email', ''),
+            full_name=record.get('full_name', ''),
+            date_of_birth=record.get('date_of_birth', ''),
+            age=int(record.get('age') or 0),
+            phone_number=record.get('phone_number', ''),
+            source_of_income=record.get('source_of_income', ''),
+            address=record.get('address') or {},
+            amount=self._parse_amount(record.get('amount')),
+            duration=record.get('duration', ''),
+            interest=self._parse_amount(record.get('interest')),
+            reason_for_borrowing=record.get('reason_for_borrowing', ''),
+            facebook_link=record.get('facebook_link', ''),
+            instagram_link=record.get('instagram_link', ''),
+            contact_person_1=record.get('contact_person_1') or {},
+            contact_person_2=record.get('contact_person_2'),
+            status=status_data.get('status', 'pending'),
+            submitted_at=self._parse_date(record.get('submitted_at')),
+            status_updated_at=self._parse_date(status_data.get('status_updated_at')),
+            admin_notes=status_data.get('admin_notes', ''),
+            images=record.get('images') or []
+        )
     
     @staticmethod
     def _generate_app_id(email: str) -> str:
@@ -220,12 +254,21 @@ class ApplicationService:
         """Parse date string to datetime"""
         if not date_string:
             return datetime.now()
+
+        if isinstance(date_string, datetime):
+            return date_string
         
         try:
+            if isinstance(date_string, str):
+                try:
+                    return datetime.fromisoformat(date_string.replace('Z', '+00:00')).replace(tzinfo=None)
+                except ValueError:
+                    pass
+
             # Try multiple date formats
             for fmt in ['%m/%d/%Y %H:%M:%S', '%Y-%m-%d %H:%M:%S', '%m/%d/%Y', '%Y-%m-%d']:
                 try:
-                    return datetime.strptime(date_string, fmt)
+                    return datetime.strptime(str(date_string), fmt)
                 except ValueError:
                     continue
             
@@ -279,7 +322,7 @@ class ApplicationService:
                 images.append({
                     'image_type': field_key,
                     'image_url': f"/api/v1/applications/images/{file_id}",
-                    'uploaded_at': datetime.now()
+                    'uploaded_at': datetime.now().isoformat()
                 })
         
         return images

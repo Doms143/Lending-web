@@ -3,7 +3,9 @@ from fastapi import APIRouter, HTTPException, Depends
 from typing import Optional
 import logging
 from app.utils.supabase_service import SupabaseService
+from app.utils.google_sheets_service import GoogleSheetsService
 from app.utils.schemas import ApplicationStatusUpdate, ApplicationNotesUpdate
+from app.features.applications.service import ApplicationService
 from app.core.config import get_settings
 from app.core.dependencies import get_current_admin
 
@@ -18,6 +20,37 @@ def get_supabase_service() -> SupabaseService:
         settings.supabase_url,
         settings.supabase_service_role_key or settings.supabase_key
     )
+
+
+def get_application_service() -> ApplicationService:
+    """Dependency to get application sync service"""
+    settings = get_settings()
+    google_service = GoogleSheetsService(settings.google_credentials_path, settings.google_credentials_json)
+    supabase_service = SupabaseService(
+        settings.supabase_url,
+        settings.supabase_service_role_key or settings.supabase_key
+    )
+    return ApplicationService(
+        google_service,
+        supabase_service,
+        settings.google_sheets_id,
+        settings.google_form_response_sheet
+    )
+
+
+@router.post("/sync/google-sheets")
+async def sync_google_sheets(
+    current_user: dict = Depends(get_current_admin),
+    service: ApplicationService = Depends(get_application_service),
+    audit_service: SupabaseService = Depends(get_supabase_service)
+):
+    try:
+        result = service.sync_google_sheets_to_database()
+        audit_service.log_action(current_user["id"], "sync_google_sheets", None, result)
+        return result
+    except Exception as e:
+        logger.error(f"Failed to sync Google Sheets: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to sync Google Sheets: {str(e)}")
 
 
 @router.post("/applications/{app_id}/approve")

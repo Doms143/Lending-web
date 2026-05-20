@@ -47,6 +47,11 @@ export const applicationApi = {
     return response.data
   },
 
+  syncGoogleSheets: async () => {
+    const response = await apiClient.post('/api/v1/admin/sync/google-sheets')
+    return response.data
+  },
+
   downloadAsCSV: async (data, filename = 'applications.csv') => {
     const csv = convertToCSV(data)
     const element = document.createElement('a')

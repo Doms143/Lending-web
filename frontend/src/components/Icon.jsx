@@ -87,6 +87,14 @@ const icons = {
       <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
     </>
   ),
+  refresh: (
+    <>
+      <path d="M21 12a9 9 0 0 1-15.5 6.2" />
+      <path d="M3 12A9 9 0 0 1 18.5 5.8" />
+      <path d="M18 2v4h-4" />
+      <path d="M6 22v-4h4" />
+    </>
+  ),
 }
 
 export const Icon = ({ name, size = 18, className = '', ...props }) => {

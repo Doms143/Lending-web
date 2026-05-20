@@ -13,6 +13,8 @@ export const Dashboard = ({ onSelectApp, onViewApplications }) => {
   const [dashboardError, setDashboardError] = useState(null)
   const [exportError, setExportError] = useState(null)
   const [exportLoading, setExportLoading] = useState(false)
+  const [syncLoading, setSyncLoading] = useState(false)
+  const [syncMessage, setSyncMessage] = useState(null)
   const [showExportOptions, setShowExportOptions] = useState(false)
 
   useEffect(() => {
@@ -91,6 +93,23 @@ export const Dashboard = ({ onSelectApp, onViewApplications }) => {
     return <Loading />
   }
 
+  const handleSync = async () => {
+    try {
+      setSyncLoading(true)
+      setSyncMessage(null)
+      const result = await applicationApi.syncGoogleSheets()
+      setSyncMessage(`Synced ${result.synced_count || 0} applications from Google Sheets.`)
+      await fetchDashboardData()
+    } catch (err) {
+      const status = err.response?.status
+      const detail = err.response?.data?.detail
+      setSyncMessage(detail ? `Sync failed (${status}): ${detail}` : 'Sync failed. Check backend logs and Google credentials.')
+      console.error(err)
+    } finally {
+      setSyncLoading(false)
+    }
+  }
+
   const s = summary
 
   return (
@@ -104,7 +123,19 @@ export const Dashboard = ({ onSelectApp, onViewApplications }) => {
           <Icon name="applications" size={16} />
           View All Applications
         </Button>
+        <Button variant="primary" size="sm" onClick={handleSync} loading={syncLoading}>
+          <Icon name="refresh" size={16} />
+          Sync Google Sheets
+        </Button>
       </div>
+
+      {syncMessage && (
+        <Alert
+          type={syncMessage.startsWith('Sync failed') ? 'danger' : 'success'}
+          message={syncMessage}
+          onClose={() => setSyncMessage(null)}
+        />
+      )}
 
       {dashboardError && (
         <ErrorState

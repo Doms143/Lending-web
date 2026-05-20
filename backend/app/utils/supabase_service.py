@@ -40,6 +40,40 @@ class SupabaseService:
         }
     
     # Applications
+
+    def upsert_applications(self, applications: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        try:
+            if not applications:
+                return []
+
+            result = self.client.table('applications').upsert(
+                applications,
+                on_conflict='id'
+            ).execute()
+            return result.data or []
+        except Exception as e:
+            logger.error(f"Failed to upsert applications: {str(e)}")
+            raise
+
+    def get_synced_applications(self, limit: int = 1000, offset: int = 0) -> List[Dict[str, Any]]:
+        try:
+            result = self.client.table('applications') \
+                .select('*') \
+                .order('submitted_at', desc=True) \
+                .range(offset, offset + limit - 1) \
+                .execute()
+            return result.data or []
+        except Exception as e:
+            logger.error(f"Failed to get synced applications: {str(e)}")
+            raise
+
+    def get_synced_application(self, app_id: str) -> Optional[Dict[str, Any]]:
+        try:
+            result = self.client.table('applications').select('*').eq('id', app_id).execute()
+            return result.data[0] if result.data else None
+        except Exception as e:
+            logger.error(f"Failed to get synced application: {str(e)}")
+            raise
     
     def get_application_status(self, app_id: str) -> Optional[Dict[str, Any]]:
         try:

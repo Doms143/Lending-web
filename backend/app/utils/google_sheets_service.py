@@ -77,6 +77,12 @@ class GoogleSheetsService:
         Returns:
             List of rows with cell values
         """
+        if not self.sheets_service:
+            raise RuntimeError(
+                "Google Sheets API not authenticated. "
+                "Set GOOGLE_CREDENTIALS_JSON environment variable on Render "
+                "or ensure credentials.json exists locally."
+            )
         try:
             result = self.sheets_service.spreadsheets().values().get(
                 spreadsheetId=spreadsheet_id,

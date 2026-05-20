@@ -7,7 +7,11 @@ const normalizeApiUrl = (value) => {
     url = `https://${url}`
   }
 
-  return url.replace(/^http:\/\/(.+\.railway\.app)$/i, 'https://$1')
+  if (/^http:\/\//i.test(url) && !/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(url)) {
+    return url.replace(/^http:\/\//i, 'https://')
+  }
+
+  return url
 }
 
 export const API_BASE_URL = normalizeApiUrl(import.meta.env.VITE_API_URL)

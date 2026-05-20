@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Icon } from '../../components/Icon'
-import { getAuthImageUrl } from '../../utils/helpers'
+import { AuthImage } from '../../components/AuthImage'
 import './applications.css'
 
 export const ImageGallery = ({ images, applicantName, onClose }) => {
@@ -92,8 +92,8 @@ export const ImageGallery = ({ images, applicantName, onClose }) => {
           onTouchStart={handleFSTouchStart}
           onTouchEnd={handleFSTouchEnd}
         >
-          <img
-            src={getAuthImageUrl(images[fullscreenIndex].image_url)}
+          <AuthImage
+            src={images[fullscreenIndex].image_url}
             alt={`${images[fullscreenIndex].image_type.replace(/_/g, ' ')} for ${applicantName}`}
             onClick={(e) => e.stopPropagation()}
           />
@@ -141,10 +141,10 @@ export const ImageGallery = ({ images, applicantName, onClose }) => {
                   onClick={() => setFullscreenIndex(currentIndex)}
                   aria-label={`Open ${currentLabel} full screen`}
                 >
-                  <img
-                  src={getAuthImageUrl(currentImage.image_url)}
-                  alt={`${currentLabel} for ${applicantName}`}
-                  className="gallery-main-image"
+                  <AuthImage
+                    src={currentImage.image_url}
+                    alt={`${currentLabel} for ${applicantName}`}
+                    className="gallery-main-image"
                   />
                 </button>
                 <div className="gallery-image-info">
@@ -170,7 +170,7 @@ export const ImageGallery = ({ images, applicantName, onClose }) => {
                   aria-label={`Show ${img.image_type.replace(/_/g, ' ')}`}
                   aria-current={idx === currentIndex ? 'true' : undefined}
                 >
-                  <img src={getAuthImageUrl(img.image_url)} alt="" />
+                  <AuthImage src={img.image_url} alt="" />
                 </button>
               ))}
             </div>

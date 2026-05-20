@@ -48,10 +48,3 @@ export const isValidEmail = (email) => {
   return regex.test(email)
 }
 
-export const getAuthImageUrl = (url) => {
-  if (!url) return url
-  const token = localStorage.getItem('authToken')
-  if (!token) return url
-  const separator = url.includes('?') ? '&' : '?'
-  return `${url}${separator}token=${encodeURIComponent(token)}`
-}

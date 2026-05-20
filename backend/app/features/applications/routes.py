@@ -7,7 +7,7 @@ from app.utils.schemas import ApplicationResponse, ApplicationListResponse, Dash
 from app.utils.google_sheets_service import GoogleSheetsService, GoogleDriveService
 from app.utils.supabase_service import SupabaseService
 from app.core.config import get_settings
-from app.core.dependencies import get_current_user, get_current_user_token_query
+from app.core.dependencies import get_current_user
 from app.core.exceptions import ApplicationNotFound, GoogleSheetsError
 
 logger = logging.getLogger(__name__)
@@ -68,7 +68,7 @@ async def get_dashboard_summary(service: ApplicationService = Depends(get_applic
 
 
 @images_router.get("/images/{file_id}")
-async def proxy_image(file_id: str, _user: dict = Depends(get_current_user_token_query)):
+async def proxy_image(file_id: str, _user: dict = Depends(get_current_user)):
     """Proxy Google Drive images through backend using service account"""
     try:
         settings = get_settings()

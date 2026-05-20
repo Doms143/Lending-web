@@ -50,7 +50,7 @@ async def sync_google_sheets(
         return result
     except Exception as e:
         logger.error(f"Failed to sync Google Sheets: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to sync Google Sheets: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to sync Google Sheets")
 
 
 @router.get("/sync/status")
@@ -76,7 +76,7 @@ async def approve_application(
         return {"success": True, "data": result}
     except Exception as e:
         logger.error(f"Failed to approve application: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to approve application: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to approve application")
 
 
 @router.post("/applications/{app_id}/reject")
@@ -96,7 +96,7 @@ async def reject_application(
         return {"success": True, "data": result}
     except Exception as e:
         logger.error(f"Failed to reject application: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to reject application: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to reject application")
 
 
 @router.put("/applications/{app_id}/notes")
@@ -108,11 +108,11 @@ async def update_application_notes(
 ):
     try:
         result = service.update_admin_notes(app_id, notes_update.notes)
-        service.log_action(current_user["id"], "update_notes", app_id, {"notes": notes_update.notes})
+        service.log_action(current_user["id"], "update_notes", app_id, {"notes_updated": True})
         return {"success": True, "data": result}
     except Exception as e:
         logger.error(f"Failed to update notes: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to update notes: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to update notes")
 
 
 @router.get("/applications/export/csv")
@@ -129,4 +129,4 @@ async def export_applications_csv(
         return {"success": True, "count": len(all_apps), "data": all_apps}
     except Exception as e:
         logger.error(f"Failed to export applications: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to export applications: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to export applications")

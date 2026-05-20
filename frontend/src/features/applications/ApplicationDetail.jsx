@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
-import { formatCurrency, getAuthImageUrl } from '../../utils/helpers'
+import { formatCurrency } from '../../utils/helpers'
 import { applicationApi } from '../../utils/apiService'
 import { Button, Card, ErrorState, Loading } from '../../components/Common'
 import { Icon } from '../../components/Icon'
+import { AuthImage } from '../../components/AuthImage'
 import { AdminActions } from '../admin/AdminActions'
 import { ImageGallery } from './ImageGallery'
 import './applications.css'
@@ -312,7 +313,7 @@ export const ApplicationDetail = ({ appId, onBack }) => {
                     type="button"
                     aria-label={`Open ${img.image_type.replace(/_/g, ' ')} image`}
                   >
-                    <img src={getAuthImageUrl(img.image_url)} alt={`${img.image_type.replace(/_/g, ' ')} for ${a.full_name}`} />
+                    <AuthImage src={img.image_url} alt={`${img.image_type.replace(/_/g, ' ')} for ${a.full_name}`} />
                     <span className="image-label">{img.image_type.replace(/_/g, ' ')}</span>
                   </button>
                 ))}

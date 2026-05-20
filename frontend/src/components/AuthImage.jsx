@@ -31,8 +31,13 @@ export const AuthImage = ({ src, alt, className = '', ...props }) => {
         }
 
         const blob = await response.blob()
-        activeObjectUrl = URL.createObjectURL(blob)
-        setObjectUrl(activeObjectUrl)
+        const dataUrl = await new Promise((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onloadend = () => resolve(reader.result)
+          reader.onerror = reject
+          reader.readAsDataURL(blob)
+        })
+        setObjectUrl(dataUrl)
       } catch (error) {
         if (!controller.signal.aborted) {
           setFailed(true)
@@ -46,7 +51,6 @@ export const AuthImage = ({ src, alt, className = '', ...props }) => {
 
     return () => {
       controller.abort()
-      if (activeObjectUrl) URL.revokeObjectURL(activeObjectUrl)
     }
   }, [src])
 

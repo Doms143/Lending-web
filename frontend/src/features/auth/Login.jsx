@@ -29,7 +29,7 @@ export const Login = ({ onLoginSuccess }) => {
       onLoginSuccess()
     } catch (err) {
       if (!err.response) {
-        setError(`Cannot reach backend API at ${API_BASE_URL}. Check Vercel VITE_API_URL and Railway CORS.`)
+        setError(`Cannot reach backend API at ${API_BASE_URL}. Check Vercel VITE_API_URL and Render CORS settings.`)
         return
       }
 

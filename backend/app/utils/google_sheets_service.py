@@ -250,14 +250,6 @@ class GoogleSheetsService:
 class GoogleDriveService:
     """Service for accessing Google Drive files (images)"""
     
-    _cached_drive = None
-    
-    @classmethod
-    def _get_cached_drive(cls, creds):
-        if cls._cached_drive is None:
-            cls._cached_drive = build('drive', 'v3', credentials=creds, cache_discovery=False)
-        return cls._cached_drive
-    
     def __init__(self, credentials_path: str, credentials_json: str = ""):
         """Initialize Google Drive service
         
@@ -276,9 +268,8 @@ class GoogleDriveService:
         try:
             self.creds = _load_service_account_credentials(self.credentials_path, self.credentials_json)
             if not self.creds:
-                logger.warning("Google Drive not authenticated - credentials not found")
                 return
-            self.drive_service = self._get_cached_drive(self.creds)
+            self.drive_service = build('drive', 'v3', credentials=self.creds)
             logger.info("Successfully authenticated with Google Drive")
         except Exception as e:
             logger.error(f"Drive authentication failed: {str(e)}")

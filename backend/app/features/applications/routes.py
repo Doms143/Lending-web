@@ -1,5 +1,5 @@
 """Application routes"""
-from fastapi import APIRouter, HTTPException, Query, Depends, Response, Request
+from fastapi import APIRouter, HTTPException, Query, Depends, Response
 from typing import Optional, List
 import logging
 from app.features.applications.service import ApplicationService
@@ -68,28 +68,15 @@ async def get_dashboard_summary(service: ApplicationService = Depends(get_applic
 
 
 @images_router.get("/images/{file_id}")
-async def proxy_image(file_id: str, request: Request, _user: dict = Depends(get_current_user)):
-    """Proxy Google Drive images through backend using cached service account"""
+async def proxy_image(file_id: str, _user: dict = Depends(get_current_user)):
+    """Proxy Google Drive images through backend"""
     try:
         settings = get_settings()
-        drive_service = GoogleDriveService.get_instance(
-            settings.google_credentials_path,
-            settings.google_credentials_json
-        )
-        content, mime_type, etag = drive_service.download_file(file_id)
-
-        if etag:
-            if_match = request.headers.get("if-none-match")
-            if if_match == etag:
-                return Response(status_code=304)
-
-        headers = {
-            "Cache-Control": "public, max-age=86400",
-        }
-        if etag:
-            headers["ETag"] = etag
-
-        return Response(content=content, media_type=mime_type, headers=headers)
+        drive_service = GoogleDriveService(settings.google_credentials_path, settings.google_credentials_json)
+        content, mime_type = drive_service.download_file(file_id)
+        return Response(content=content, media_type=mime_type, headers={
+            "Cache-Control": "public, max-age=86400"
+        })
     except Exception as e:
         logger.error(f"Failed to proxy image {file_id}: {str(e)}")
         raise HTTPException(status_code=404, detail="Image not found")

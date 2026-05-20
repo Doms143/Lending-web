@@ -250,6 +250,15 @@ class GoogleSheetsService:
 class GoogleDriveService:
     """Service for accessing Google Drive files (images)"""
     
+    _instance = None
+    
+    @classmethod
+    def get_instance(cls, credentials_path: str = "", credentials_json: str = ""):
+        """Get or create a cached GoogleDriveService singleton"""
+        if cls._instance is None:
+            cls._instance = cls(credentials_path, credentials_json)
+        return cls._instance
+    
     def __init__(self, credentials_path: str, credentials_json: str = ""):
         """Initialize Google Drive service
         
@@ -283,6 +292,29 @@ class GoogleDriveService:
         """Get preview link for a file"""
         return f"https://drive.google.com/file/d/{file_id}/preview"
     
+    def get_file_metadata(self, file_id: str) -> dict:
+        """Get file metadata from Google Drive
+        
+        Args:
+            file_id: Google Drive file ID
+        
+        Returns:
+            Dictionary with mime_type, etag, and size
+        """
+        try:
+            file_metadata = self.drive_service.files().get(
+                fileId=file_id,
+                fields="mimeType,md5Checksum,size"
+            ).execute()
+            return {
+                'mime_type': file_metadata.get('mimeType', 'image/jpeg'),
+                'etag': file_metadata.get('md5Checksum', ''),
+                'size': file_metadata.get('size', 0),
+            }
+        except Exception as e:
+            logger.error(f"Failed to get file metadata {file_id}: {str(e)}")
+            raise
+    
     def download_file(self, file_id: str) -> tuple:
         """Download file content and MIME type from Google Drive
         
@@ -290,13 +322,17 @@ class GoogleDriveService:
             file_id: Google Drive file ID
         
         Returns:
-            Tuple of (file_bytes, mime_type)
+            Tuple of (file_bytes, mime_type, etag)
         """
         try:
-            file_metadata = self.drive_service.files().get(fileId=file_id, fields="mimeType").execute()
+            file_metadata = self.drive_service.files().get(
+                fileId=file_id,
+                fields="mimeType,md5Checksum"
+            ).execute()
             mime_type = file_metadata.get('mimeType', 'image/jpeg')
+            etag = file_metadata.get('md5Checksum', '')
             content = self.drive_service.files().get_media(fileId=file_id).execute()
-            return content, mime_type
+            return content, mime_type, etag
         except Exception as e:
             logger.error(f"Failed to download file {file_id}: {str(e)}")
             raise

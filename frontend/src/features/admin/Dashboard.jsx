@@ -131,7 +131,7 @@ export const Dashboard = ({ onSelectApp, onViewApplications }) => {
     label,
     count: s[`${value}_count`] || 0,
   }))
-  const priorityStatuses = ['active', 'overdue', 'defaulted']
+  const priorityStatuses = ['released', 'overdue', 'defaulted']
     .map((value) => statusSummaries.find((item) => item.value === value))
     .filter(Boolean)
   const breakdownStatuses = statusSummaries.filter((item) => !priorityStatuses.some((priority) => priority.value === item.value))

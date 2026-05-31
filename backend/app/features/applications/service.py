@@ -121,7 +121,6 @@ class ApplicationService:
                 approved_count=counts["approved"],
                 rejected_count=counts["rejected"],
                 released_count=counts["released"],
-                active_count=counts["active"],
                 partially_paid_count=counts["partially_paid"],
                 paid_count=counts["paid"],
                 overdue_count=counts["overdue"],

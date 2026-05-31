@@ -104,7 +104,6 @@ class DashboardSummary(BaseModel):
     approved_count: int
     rejected_count: int
     released_count: int = 0
-    active_count: int = 0
     partially_paid_count: int = 0
     paid_count: int = 0
     overdue_count: int = 0

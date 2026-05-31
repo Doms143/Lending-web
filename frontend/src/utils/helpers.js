@@ -32,7 +32,6 @@ export const getStatusColor = (status) => {
     approved: 'status-approved',
     rejected: 'status-rejected',
     released: 'status-released',
-    active: 'status-active',
     partially_paid: 'status-partially_paid',
     paid: 'status-paid',
     overdue: 'status-overdue',

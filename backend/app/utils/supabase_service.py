@@ -170,7 +170,7 @@ class SupabaseService:
 
     def _get_automatic_status(self, record: Dict[str, Any]) -> Optional[str]:
         status = record.get('status')
-        if status not in {'active', 'partially_paid', 'overdue'}:
+        if status not in {'released', 'partially_paid', 'overdue'}:
             return None
 
         started_at = self._parse_datetime(
@@ -184,7 +184,7 @@ class SupabaseService:
         elapsed = datetime.now(timezone.utc) - started_at
         if elapsed >= timedelta(days=10):
             return 'defaulted'
-        if status in {'active', 'partially_paid'} and elapsed >= timedelta(days=5):
+        if status in {'released', 'partially_paid'} and elapsed >= timedelta(days=5):
             return 'overdue'
         return None
 

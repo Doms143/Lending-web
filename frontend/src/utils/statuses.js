@@ -4,7 +4,6 @@ export const APPLICATION_STATUSES = [
   { value: 'approved', label: 'Approved' },
   { value: 'rejected', label: 'Rejected' },
   { value: 'released', label: 'Released' },
-  { value: 'active', label: 'Active' },
   { value: 'partially_paid', label: 'Partially Paid' },
   { value: 'paid', label: 'Paid' },
   { value: 'overdue', label: 'Overdue' },

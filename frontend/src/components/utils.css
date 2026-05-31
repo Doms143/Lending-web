@@ -35,11 +35,6 @@
   color: var(--color-status-released-text);
 }
 
-.badge-active {
-  background-color: var(--color-status-active-bg);
-  color: var(--color-status-active-text);
-}
-
 .badge-partially_paid {
   background-color: var(--color-status-partially-paid-bg);
   color: var(--color-status-partially-paid-text);

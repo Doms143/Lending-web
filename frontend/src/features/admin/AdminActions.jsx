@@ -16,12 +16,9 @@ const NEXT_PHASES = {
     { status: 'cancelled', label: 'Cancel', variant: 'danger' },
   ],
   released: [
-    { status: 'active', label: 'Mark Active', variant: 'primary' },
-    { status: 'cancelled', label: 'Cancel', variant: 'danger' },
-  ],
-  active: [
     { status: 'partially_paid', label: 'Set Partially Paid', variant: 'primary' },
     { status: 'paid', label: 'Set Fully Paid', variant: 'success' },
+    { status: 'cancelled', label: 'Cancel', variant: 'danger' },
   ],
   partially_paid: [
     { status: 'paid', label: 'Set Fully Paid', variant: 'success' },

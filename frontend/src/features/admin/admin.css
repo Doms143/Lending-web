@@ -85,11 +85,6 @@
   color: var(--color-status-released-text);
 }
 
-.status-active {
-  background: var(--color-status-active-bg);
-  color: var(--color-status-active-text);
-}
-
 .status-partially_paid {
   background: var(--color-status-partially-paid-bg);
   color: var(--color-status-partially-paid-text);
@@ -392,11 +387,6 @@
   color: var(--color-status-released-text);
 }
 
-.summary-icon.active {
-  background: var(--color-status-active-bg);
-  color: var(--color-status-active-text);
-}
-
 .summary-icon.partially_paid {
   background: var(--color-status-partially-paid-bg);
   color: var(--color-status-partially-paid-text);
@@ -630,10 +620,6 @@
   background: #6366f1;
 }
 
-.export-status-dot.active {
-  background: #14b8a6;
-}
-
 .export-status-dot.partially_paid {
   background: #f97316;
 }
@@ -820,10 +806,6 @@
     line-height: 1;
   }
 
-  .mobile-priority-item.active {
-    background: var(--color-status-active-bg);
-  }
-
   .mobile-priority-item.overdue {
     background: var(--color-status-overdue-bg);
   }
@@ -995,10 +977,6 @@
   background: #6366f1;
 }
 
-.status-progress-active {
-  background: #14b8a6;
-}
-
 .status-progress-partially_paid {
   background: #f97316;
 }
@@ -1059,10 +1037,6 @@
 
 .dot-released {
   background: #6366f1;
-}
-
-.dot-active {
-  background: #14b8a6;
 }
 
 .dot-partially_paid {

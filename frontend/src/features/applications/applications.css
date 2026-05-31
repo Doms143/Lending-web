@@ -113,10 +113,6 @@
   border-left-color: #6366f1;
 }
 
-.table-row.status-active-row {
-  border-left-color: #14b8a6;
-}
-
 .table-row.status-partially_paid-row {
   border-left-color: #f97316;
 }
@@ -155,10 +151,6 @@
 
 .table-row.status-released-row:hover {
   background-color: rgba(99, 102, 241, 0.04);
-}
-
-.table-row.status-active-row:hover {
-  background-color: rgba(20, 184, 166, 0.04);
 }
 
 .table-row.status-partially_paid-row:hover {
@@ -440,10 +432,6 @@
 
 .application-card-released {
   border-left-color: #6366f1;
-}
-
-.application-card-active {
-  border-left-color: #14b8a6;
 }
 
 .application-card-partially_paid {

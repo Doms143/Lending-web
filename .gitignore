@@ -70,7 +70,9 @@ pnpm-debug.log*
 *.db
 *.sqlite
 *.sqlite3
-database/
+database/*.db
+database/*.sqlite
+database/*.sqlite3
 
 # Cache
 .cache/

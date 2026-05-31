@@ -33,6 +33,14 @@ export const applicationApi = {
     return response.data
   },
 
+  updateStatus: async (appId, status, rejectionReason = null) => {
+    const response = await apiClient.put(`/api/v1/admin/applications/${appId}/status`, {
+      status,
+      rejection_reason: rejectionReason
+    })
+    return response.data
+  },
+
   updateNotes: async (appId, notes) => {
     const response = await apiClient.put(`/api/v1/admin/applications/${appId}/notes`, {
       notes

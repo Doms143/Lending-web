@@ -3,10 +3,15 @@ import { applicationApi } from '../../utils/apiService'
 import { formatCurrency, formatDate } from '../../utils/helpers'
 import { Badge, Button, Card, Alert, ErrorState, Loading } from '../../components/Common'
 import { Icon } from '../../components/Icon'
+import { APPLICATION_STATUSES } from '../../utils/statuses'
 import './admin.css'
 
 export const Dashboard = ({ onSelectApp, onViewApplications }) => {
-  const [summary, setSummary] = useState({ total_applications: 0, pending_count: 0, approved_count: 0, rejected_count: 0, total_loan_amount: 0 })
+  const [summary, setSummary] = useState({
+    total_applications: 0,
+    total_loan_amount: 0,
+    ...Object.fromEntries(APPLICATION_STATUSES.map(({ value }) => [`${value}_count`, 0]))
+  })
   const [recentApplications, setRecentApplications] = useState([])
   const [pendingApplications, setPendingApplications] = useState([])
   const [loading, setLoading] = useState(true)
@@ -121,6 +126,15 @@ export const Dashboard = ({ onSelectApp, onViewApplications }) => {
   }
 
   const s = summary
+  const statusSummaries = APPLICATION_STATUSES.map(({ value, label }) => ({
+    value,
+    label,
+    count: s[`${value}_count`] || 0,
+  }))
+  const priorityStatuses = ['active', 'overdue', 'defaulted']
+    .map((value) => statusSummaries.find((item) => item.value === value))
+    .filter(Boolean)
+  const breakdownStatuses = statusSummaries.filter((item) => !priorityStatuses.some((priority) => priority.value === item.value))
 
   return (
     <div className="dashboard">
@@ -164,6 +178,53 @@ export const Dashboard = ({ onSelectApp, onViewApplications }) => {
         />
       )}
 
+      {!dashboardError && (
+        <div className="mobile-dashboard-summary" aria-label="Dashboard summary">
+          <div className="mobile-key-metrics">
+            <div className="mobile-key-card total">
+              <span className="mobile-key-label">Total</span>
+              <strong>{s.total_applications}</strong>
+              <span>applications</span>
+            </div>
+            <div className="mobile-key-card review">
+              <span className="mobile-key-label">Needs Review</span>
+              <strong>{s.under_review_count || 0}</strong>
+              <span>under review</span>
+            </div>
+          </div>
+
+          <div className="mobile-priority-panel">
+            <div className="mobile-panel-header">
+              <h3>Priority</h3>
+              <span>loan risk</span>
+            </div>
+            <div className="mobile-priority-grid">
+              {priorityStatuses.map((item) => (
+                <div className={`mobile-priority-item ${item.value}`} key={item.value}>
+                  <span>{item.label}</span>
+                  <strong>{item.count}</strong>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mobile-status-breakdown">
+            <div className="mobile-panel-header">
+              <h3>Status Breakdown</h3>
+              <span>{s.total_applications} total</span>
+            </div>
+            <div className="mobile-status-list">
+              {breakdownStatuses.map((item) => (
+                <div className="mobile-status-row" key={item.value}>
+                  <span><span className={`dot dot-${item.value}`} /> {item.label}</span>
+                  <strong>{item.count}</strong>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {!dashboardError && <div className="summary-grid">
         <Card className="summary-card">
           <div className="summary-icon total"><Icon name="users" size={22} /></div>
@@ -173,60 +234,33 @@ export const Dashboard = ({ onSelectApp, onViewApplications }) => {
           </div>
         </Card>
 
-        <Card className="summary-card">
-          <div className="summary-icon pending"><Icon name="clock" size={22} /></div>
-          <div className="summary-content">
-            <p className="summary-label">Pending</p>
-            <p className="summary-value">{s.pending_count}</p>
-          </div>
-        </Card>
-
-        <Card className="summary-card">
-          <div className="summary-icon approved"><Icon name="check" size={22} /></div>
-          <div className="summary-content">
-            <p className="summary-label">Approved</p>
-            <p className="summary-value">{s.approved_count}</p>
-          </div>
-        </Card>
-
-        <Card className="summary-card">
-          <div className="summary-icon rejected"><Icon name="x" size={22} /></div>
-          <div className="summary-content">
-            <p className="summary-label">Rejected</p>
-            <p className="summary-value">{s.rejected_count}</p>
-          </div>
-        </Card>
+        {statusSummaries.map((item) => (
+          <Card className="summary-card" key={item.value}>
+            <div className={`summary-icon ${item.value}`}><Icon name={item.value === 'rejected' ? 'x' : item.value === 'approved' || item.value === 'paid' ? 'check' : 'clock'} size={22} /></div>
+            <div className="summary-content">
+              <p className="summary-label">{item.label}</p>
+              <p className="summary-value">{item.count}</p>
+            </div>
+          </Card>
+        ))}
       </div>}
 
       {!dashboardError && s.total_applications > 0 && (
         <div className="status-progress-bar">
           <div className="status-progress-track">
-            {s.pending_count > 0 && (
+            {statusSummaries.filter((item) => item.count > 0).map((item) => (
               <div
-                className="status-progress-segment status-progress-pending"
-                style={{ width: `${(s.pending_count / s.total_applications) * 100}%` }}
-                title={`${s.pending_count} pending`}
+                key={item.value}
+                className={`status-progress-segment status-progress-${item.value}`}
+                style={{ width: `${(item.count / s.total_applications) * 100}%` }}
+                title={`${item.count} ${item.label}`}
               />
-            )}
-            {s.approved_count > 0 && (
-              <div
-                className="status-progress-segment status-progress-approved"
-                style={{ width: `${(s.approved_count / s.total_applications) * 100}%` }}
-                title={`${s.approved_count} approved`}
-              />
-            )}
-            {s.rejected_count > 0 && (
-              <div
-                className="status-progress-segment status-progress-rejected"
-                style={{ width: `${(s.rejected_count / s.total_applications) * 100}%` }}
-                title={`${s.rejected_count} rejected`}
-              />
-            )}
+            ))}
           </div>
           <div className="status-progress-labels">
-            <span><span className="dot dot-pending" /> Pending {s.pending_count}</span>
-            <span><span className="dot dot-approved" /> Approved {s.approved_count}</span>
-            <span><span className="dot dot-rejected" /> Rejected {s.rejected_count}</span>
+            {statusSummaries.map((item) => (
+              <span key={item.value}><span className={`dot dot-${item.value}`} /> {item.label} {item.count}</span>
+            ))}
           </div>
         </div>
       )}
@@ -309,15 +343,11 @@ export const Dashboard = ({ onSelectApp, onViewApplications }) => {
               </Button>
               {showExportOptions && (
                 <div className="export-dropdown-menu">
-                  <button type="button" onClick={() => { handleExport('pending'); setShowExportOptions(false) }}>
-                    <span className="export-status-dot pending" /> Pending
-                  </button>
-                  <button type="button" onClick={() => { handleExport('approved'); setShowExportOptions(false) }}>
-                    <span className="export-status-dot approved" /> Approved
-                  </button>
-                  <button type="button" onClick={() => { handleExport('rejected'); setShowExportOptions(false) }}>
-                    <span className="export-status-dot rejected" /> Rejected
-                  </button>
+                  {APPLICATION_STATUSES.map((item) => (
+                    <button key={item.value} type="button" onClick={() => { handleExport(item.value); setShowExportOptions(false) }}>
+                      <span className={`export-status-dot ${item.value}`} /> {item.label}
+                    </button>
+                  ))}
                 </div>
               )}
             </div>

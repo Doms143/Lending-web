@@ -8,6 +8,7 @@ from app.utils.schemas import ApplicationStatusUpdate, ApplicationNotesUpdate
 from app.features.applications.service import ApplicationService
 from app.core.config import get_settings
 from app.core.dependencies import get_current_admin
+from app.utils.statuses import ALLOWED_STATUS_TRANSITIONS
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/admin", tags=["admin"], dependencies=[Depends(get_current_admin)])
@@ -36,6 +37,20 @@ def get_application_service() -> ApplicationService:
         settings.google_sheets_id,
         settings.google_form_response_sheet
     )
+
+
+def validate_status_transition(service: SupabaseService, app_id: str, next_status: str) -> str:
+    current_record = service.get_application_status(app_id) or {}
+    current_status = current_record.get("status", "pending")
+    allowed_next_statuses = ALLOWED_STATUS_TRANSITIONS.get(current_status, set())
+
+    if next_status not in allowed_next_statuses:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot move application from {current_status} to {next_status}"
+        )
+
+    return current_status
 
 
 @router.post("/sync/google-sheets")
@@ -71,6 +86,7 @@ async def approve_application(
     service: SupabaseService = Depends(get_supabase_service)
 ):
     try:
+        validate_status_transition(service, app_id, "approved")
         result = service.update_application_status(app_id, "approved")
         service.log_action(current_user["id"], "approve", app_id, {"status": "approved"})
         return {"success": True, "data": result}
@@ -89,6 +105,7 @@ async def reject_application(
     if status_update.status != "rejected":
         raise HTTPException(status_code=400, detail="Status must be 'rejected'")
     try:
+        validate_status_transition(service, app_id, "rejected")
         result = service.update_application_status(app_id, "rejected", status_update.rejection_reason)
         service.log_action(current_user["id"], "reject", app_id, {
             "status": "rejected", "reason": status_update.rejection_reason
@@ -97,6 +114,33 @@ async def reject_application(
     except Exception as e:
         logger.error(f"Failed to reject application: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to reject application")
+
+
+@router.put("/applications/{app_id}/status")
+async def update_application_status(
+    app_id: str,
+    status_update: ApplicationStatusUpdate,
+    current_user: dict = Depends(get_current_admin),
+    service: SupabaseService = Depends(get_supabase_service)
+):
+    if status_update.status == "rejected" and not (status_update.rejection_reason or "").strip():
+        raise HTTPException(status_code=400, detail="Rejection reason is required when status is rejected")
+
+    try:
+        validate_status_transition(service, app_id, status_update.status)
+        result = service.update_application_status(
+            app_id,
+            status_update.status,
+            status_update.rejection_reason
+        )
+        service.log_action(current_user["id"], "update_status", app_id, {
+            "status": status_update.status,
+            "reason": status_update.rejection_reason,
+        })
+        return {"success": True, "data": result}
+    except Exception as e:
+        logger.error(f"Failed to update application status: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to update application status")
 
 
 @router.put("/applications/{app_id}/notes")

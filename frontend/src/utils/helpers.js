@@ -28,8 +28,15 @@ export const formatDateTime = (date) => {
 export const getStatusColor = (status) => {
   const colors = {
     pending: 'status-pending',
+    under_review: 'status-under_review',
     approved: 'status-approved',
-    rejected: 'status-rejected'
+    rejected: 'status-rejected',
+    released: 'status-released',
+    active: 'status-active',
+    partially_paid: 'status-partially_paid',
+    paid: 'status-paid',
+    overdue: 'status-overdue',
+    cancelled: 'status-cancelled',
   }
   return colors[status] || 'status-pending'
 }

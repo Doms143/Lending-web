@@ -1,10 +1,11 @@
 import { useEffect, useId } from 'react'
+import { getStatusLabel } from '../utils/statuses'
 import './utils.css'
 
 export const Badge = ({ status, label = status }) => {
   return (
     <span className={`badge badge-${status}`}>
-      {label}
+      {label === status ? getStatusLabel(status) : label}
     </span>
   )
 }

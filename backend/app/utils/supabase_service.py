@@ -2,6 +2,7 @@
 from supabase import create_client, Client
 from typing import List, Dict, Any, Optional
 import logging
+from datetime import datetime, timezone, timedelta
 
 logger = logging.getLogger(__name__)
 
@@ -96,7 +97,9 @@ class SupabaseService:
     def get_application_status(self, app_id: str) -> Optional[Dict[str, Any]]:
         try:
             result = self.client.table('application_status').select('*').eq('app_id', app_id).execute()
-            return result.data[0] if result.data else None
+            if not result.data:
+                return None
+            return self._apply_automatic_status_transition(result.data[0])
         except Exception as e:
             logger.error(f"Failed to get application status: {str(e)}")
             raise
@@ -104,11 +107,24 @@ class SupabaseService:
     def update_application_status(self, app_id: str, status: str, 
                                   rejection_reason: Optional[str] = None) -> Dict[str, Any]:
         try:
-            update_data = { 'status': status, 'status_updated_at': 'now()' }
+            current_status = self.get_application_status(app_id) or {}
+            now = datetime.now(timezone.utc).isoformat()
+            update_data = {
+                'status': status,
+                'status_started_at': now,
+                'status_updated_at': now
+            }
+            if current_status.get('status') == 'paid' and status == 'approved':
+                update_data['borrow_count'] = int(current_status.get('borrow_count') or 1) + 1
+            elif not current_status:
+                update_data['borrow_count'] = 1
             if rejection_reason:
                 update_data['rejection_reason'] = rejection_reason
+            elif status != 'rejected':
+                update_data['rejection_reason'] = None
             result = self.client.table('application_status').upsert(
-                { 'app_id': app_id, **update_data }
+                { 'app_id': app_id, **update_data },
+                on_conflict='app_id'
             ).execute()
             return result.data[0] if result.data else {}
         except Exception as e:
@@ -118,7 +134,8 @@ class SupabaseService:
     def update_admin_notes(self, app_id: str, notes: str) -> Dict[str, Any]:
         try:
             result = self.client.table('application_status').upsert(
-                { 'app_id': app_id, 'admin_notes': notes }
+                { 'app_id': app_id, 'admin_notes': notes },
+                on_conflict='app_id'
             ).execute()
             return result.data[0] if result.data else {}
         except Exception as e:
@@ -128,10 +145,63 @@ class SupabaseService:
     def get_all_applications_status(self, limit: int = 1000, offset: int = 0) -> List[Dict[str, Any]]:
         try:
             result = self.client.table('application_status').select('*').range(offset, offset + limit - 1).execute()
-            return result.data
+            return [
+                self._apply_automatic_status_transition(record)
+                for record in (result.data or [])
+            ]
         except Exception as e:
             logger.error(f"Failed to get applications: {str(e)}")
             raise
+
+    def _apply_automatic_status_transition(self, record: Dict[str, Any]) -> Dict[str, Any]:
+        next_status = self._get_automatic_status(record)
+        if not next_status or next_status == record.get('status'):
+            return record
+
+        try:
+            result = self.client.table('application_status').update({
+                'status': next_status,
+                'status_updated_at': datetime.now(timezone.utc).isoformat()
+            }).eq('app_id', record.get('app_id')).execute()
+            return result.data[0] if result.data else {**record, 'status': next_status}
+        except Exception as e:
+            logger.error(f"Failed to apply automatic status transition: {str(e)}")
+            raise
+
+    def _get_automatic_status(self, record: Dict[str, Any]) -> Optional[str]:
+        status = record.get('status')
+        if status not in {'active', 'partially_paid', 'overdue'}:
+            return None
+
+        started_at = self._parse_datetime(
+            record.get('status_started_at') or
+            record.get('status_updated_at') or
+            record.get('created_at')
+        )
+        if not started_at:
+            return None
+
+        elapsed = datetime.now(timezone.utc) - started_at
+        if elapsed >= timedelta(days=10):
+            return 'defaulted'
+        if status in {'active', 'partially_paid'} and elapsed >= timedelta(days=5):
+            return 'overdue'
+        return None
+
+    @staticmethod
+    def _parse_datetime(value: Any) -> Optional[datetime]:
+        if not value:
+            return None
+        if isinstance(value, datetime):
+            parsed = value
+        else:
+            try:
+                parsed = datetime.fromisoformat(str(value).replace('Z', '+00:00'))
+            except ValueError:
+                return None
+        if parsed.tzinfo is None:
+            return parsed.replace(tzinfo=timezone.utc)
+        return parsed.astimezone(timezone.utc)
     
     # Audit Log
     

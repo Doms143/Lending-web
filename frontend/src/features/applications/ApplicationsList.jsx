@@ -3,6 +3,7 @@ import { formatCurrency, formatDate } from '../../utils/helpers'
 import { applicationApi } from '../../utils/apiService'
 import { Badge, Button, EmptyState, ErrorState } from '../../components/Common'
 import { Icon } from '../../components/Icon'
+import { APPLICATION_STATUSES, getStatusLabel } from '../../utils/statuses'
 import './applications.css'
 
 export const ApplicationsList = ({ onSelectApp, statusFilter = null }) => {
@@ -110,7 +111,7 @@ export const ApplicationsList = ({ onSelectApp, statusFilter = null }) => {
           <h2>Loan Applications</h2>
           <p className="list-subtitle">
             {localStatusFilter
-              ? <><strong style={{ textTransform: 'capitalize' }}>{localStatusFilter}</strong> &middot; {totalCount} application{totalCount !== 1 ? 's' : ''}</>
+              ? <><strong>{getStatusLabel(localStatusFilter)}</strong> &middot; {totalCount} application{totalCount !== 1 ? 's' : ''}</>
               : <>{totalCount} application{totalCount !== 1 ? 's' : ''} total</>
             }
             {searchTerm && <> &middot; filtered &middot; {sortedApplications.length} shown</>}
@@ -129,12 +130,7 @@ export const ApplicationsList = ({ onSelectApp, statusFilter = null }) => {
       </div>
 
       <div className="status-tabs" aria-label="Application status filters">
-        {[
-          { label: 'All', value: null },
-          { label: 'Pending', value: 'pending' },
-          { label: 'Approved', value: 'approved' },
-          { label: 'Rejected', value: 'rejected' },
-        ].map((tab) => (
+        {[{ label: 'All', value: null }, ...APPLICATION_STATUSES].map((tab) => (
           <button
             key={tab.label}
             className={`status-tab ${localStatusFilter === tab.value ? 'active' : ''}`}

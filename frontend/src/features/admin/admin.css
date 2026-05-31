@@ -34,6 +34,7 @@
   padding: 0.85rem;
   background: var(--color-gray-50);
   border-radius: var(--radius-md);
+  flex-wrap: wrap;
 }
 
 .status-label {
@@ -49,9 +50,24 @@
   font-size: 0.875rem;
 }
 
+.borrow-count {
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+  background: white;
+  color: var(--color-gray-700);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
 .status-pending {
   background: var(--color-status-pending-bg);
   color: var(--color-status-pending-text);
+}
+
+.status-under_review {
+  background: var(--color-status-under-review-bg);
+  color: var(--color-status-under-review-text);
 }
 
 .status-approved {
@@ -62,6 +78,78 @@
 .status-rejected {
   background: var(--color-status-rejected-bg);
   color: var(--color-status-rejected-text);
+}
+
+.status-released {
+  background: var(--color-status-released-bg);
+  color: var(--color-status-released-text);
+}
+
+.status-active {
+  background: var(--color-status-active-bg);
+  color: var(--color-status-active-text);
+}
+
+.status-partially_paid {
+  background: var(--color-status-partially-paid-bg);
+  color: var(--color-status-partially-paid-text);
+}
+
+.status-paid {
+  background: var(--color-status-paid-bg);
+  color: var(--color-status-paid-text);
+}
+
+.status-overdue {
+  background: var(--color-status-overdue-bg);
+  color: var(--color-status-overdue-text);
+}
+
+.status-defaulted {
+  background: var(--color-status-defaulted-bg);
+  color: var(--color-status-defaulted-text);
+}
+
+.status-cancelled {
+  background: var(--color-status-cancelled-bg);
+  color: var(--color-status-cancelled-text);
+}
+
+.status-update-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin-bottom: 1.25rem;
+}
+
+.status-update-section label,
+.status-update-label {
+  font-weight: 600;
+  color: var(--color-gray-700);
+}
+
+.status-update-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.status-select {
+  flex: 1;
+  min-width: 0;
+  min-height: 40px;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--color-gray-300);
+  border-radius: var(--radius-md);
+  background: white;
+  color: var(--color-gray-800);
+  font-size: 0.9rem;
+}
+
+.status-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.12);
 }
 
 .action-buttons {
@@ -200,6 +288,10 @@
   margin-bottom: 1.25rem;
 }
 
+.mobile-dashboard-summary {
+  display: none;
+}
+
 .summary-card {
   display: flex;
   align-items: center;
@@ -280,6 +372,11 @@
   color: var(--color-status-pending-text);
 }
 
+.summary-icon.under_review {
+  background: var(--color-status-under-review-bg);
+  color: var(--color-status-under-review-text);
+}
+
 .summary-icon.approved {
   background: var(--color-status-approved-bg);
   color: var(--color-status-approved-text);
@@ -288,6 +385,41 @@
 .summary-icon.rejected {
   background: var(--color-status-rejected-bg);
   color: var(--color-status-rejected-text);
+}
+
+.summary-icon.released {
+  background: var(--color-status-released-bg);
+  color: var(--color-status-released-text);
+}
+
+.summary-icon.active {
+  background: var(--color-status-active-bg);
+  color: var(--color-status-active-text);
+}
+
+.summary-icon.partially_paid {
+  background: var(--color-status-partially-paid-bg);
+  color: var(--color-status-partially-paid-text);
+}
+
+.summary-icon.paid {
+  background: var(--color-status-paid-bg);
+  color: var(--color-status-paid-text);
+}
+
+.summary-icon.overdue {
+  background: var(--color-status-overdue-bg);
+  color: var(--color-status-overdue-text);
+}
+
+.summary-icon.defaulted {
+  background: var(--color-status-defaulted-bg);
+  color: var(--color-status-defaulted-text);
+}
+
+.summary-icon.cancelled {
+  background: var(--color-status-cancelled-bg);
+  color: var(--color-status-cancelled-text);
 }
 
 .summary-content {
@@ -482,12 +614,44 @@
   background: var(--color-warning);
 }
 
+.export-status-dot.under_review {
+  background: #3b82f6;
+}
+
 .export-status-dot.approved {
   background: var(--color-success);
 }
 
 .export-status-dot.rejected {
   background: var(--color-danger);
+}
+
+.export-status-dot.released {
+  background: #6366f1;
+}
+
+.export-status-dot.active {
+  background: #14b8a6;
+}
+
+.export-status-dot.partially_paid {
+  background: #f97316;
+}
+
+.export-status-dot.paid {
+  background: #22c55e;
+}
+
+.export-status-dot.overdue {
+  background: #dc2626;
+}
+
+.export-status-dot.defaulted {
+  background: #7f1d1d;
+}
+
+.export-status-dot.cancelled {
+  background: #6b7280;
 }
 
 /* Responsive */
@@ -511,25 +675,193 @@
     order: 0;
   }
 
-  .dashboard-workspace {
+  .mobile-dashboard-summary {
     order: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    margin-bottom: 1rem;
+  }
+
+  .dashboard-workspace {
+    order: 2;
   }
 
   .summary-grid {
-    order: 2;
-    grid-template-columns: repeat(2, 1fr);
+    display: none;
   }
 
   .status-progress-bar {
-    order: 3;
+    display: none;
   }
 
   .summary-total-bar {
-    order: 4;
+    order: 3;
   }
 
   .export-section {
-    order: 5;
+    order: 4;
+  }
+
+  .mobile-key-metrics {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.7rem;
+  }
+
+  .mobile-key-card,
+  .mobile-priority-panel,
+  .mobile-status-breakdown {
+    border: 1px solid var(--color-gray-200);
+    border-radius: var(--radius-lg);
+    background: white;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .mobile-key-card {
+    min-height: 104px;
+    padding: 0.9rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .mobile-key-card::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 4px;
+  }
+
+  .mobile-key-card.total::before {
+    background: var(--color-primary);
+  }
+
+  .mobile-key-card.review::before {
+    background: #3b82f6;
+  }
+
+  .mobile-key-label {
+    color: var(--color-gray-600);
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .mobile-key-card strong {
+    color: var(--color-gray-900);
+    font-size: 2rem;
+    line-height: 1;
+  }
+
+  .mobile-key-card span:last-child {
+    color: var(--color-gray-500);
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+
+  .mobile-priority-panel,
+  .mobile-status-breakdown {
+    padding: 0.9rem;
+  }
+
+  .mobile-panel-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .mobile-panel-header h3 {
+    margin: 0;
+    font-size: 0.98rem;
+  }
+
+  .mobile-panel-header span {
+    color: var(--color-gray-500);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .mobile-priority-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.55rem;
+  }
+
+  .mobile-priority-item {
+    min-width: 0;
+    padding: 0.7rem 0.55rem;
+    border-radius: var(--radius-md);
+    background: var(--color-gray-50);
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .mobile-priority-item span {
+    color: var(--color-gray-600);
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    overflow-wrap: anywhere;
+  }
+
+  .mobile-priority-item strong {
+    color: var(--color-gray-900);
+    font-size: 1.45rem;
+    line-height: 1;
+  }
+
+  .mobile-priority-item.active {
+    background: var(--color-status-active-bg);
+  }
+
+  .mobile-priority-item.overdue {
+    background: var(--color-status-overdue-bg);
+  }
+
+  .mobile-priority-item.defaulted {
+    background: var(--color-status-defaulted-bg);
+  }
+
+  .mobile-status-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .mobile-status-row {
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border-top: 1px solid var(--color-gray-100);
+    color: var(--color-gray-700);
+    font-size: 0.88rem;
+  }
+
+  .mobile-status-row:first-child {
+    border-top: 0;
+  }
+
+  .mobile-status-row span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-width: 0;
+  }
+
+  .mobile-status-row strong {
+    color: var(--color-gray-900);
+    font-size: 1rem;
   }
 
   .review-panel:first-child {
@@ -540,19 +872,12 @@
     margin-top: 0;
   }
 
-  .summary-card:nth-child(2) {
-    order: -1;
-    grid-column: 1 / -1;
-    align-items: center;
-    background: linear-gradient(135deg, var(--color-status-pending-bg), white);
-    border-color: rgba(245, 158, 11, 0.35);
-  }
-
-  .summary-card:nth-child(2) .summary-value {
-    font-size: 2rem;
-  }
-
   .action-buttons {
+    flex-direction: column;
+  }
+
+  .status-update-row {
+    align-items: stretch;
     flex-direction: column;
   }
 
@@ -654,12 +979,44 @@
   background: var(--color-warning);
 }
 
+.status-progress-under_review {
+  background: #3b82f6;
+}
+
 .status-progress-approved {
   background: var(--color-success);
 }
 
 .status-progress-rejected {
   background: var(--color-danger);
+}
+
+.status-progress-released {
+  background: #6366f1;
+}
+
+.status-progress-active {
+  background: #14b8a6;
+}
+
+.status-progress-partially_paid {
+  background: #f97316;
+}
+
+.status-progress-paid {
+  background: #22c55e;
+}
+
+.status-progress-overdue {
+  background: #dc2626;
+}
+
+.status-progress-defaulted {
+  background: #7f1d1d;
+}
+
+.status-progress-cancelled {
+  background: #6b7280;
 }
 
 .status-progress-labels {
@@ -688,12 +1045,44 @@
   background: var(--color-warning);
 }
 
+.dot-under_review {
+  background: #3b82f6;
+}
+
 .dot-approved {
   background: var(--color-success);
 }
 
 .dot-rejected {
   background: var(--color-danger);
+}
+
+.dot-released {
+  background: #6366f1;
+}
+
+.dot-active {
+  background: #14b8a6;
+}
+
+.dot-partially_paid {
+  background: #f97316;
+}
+
+.dot-paid {
+  background: #22c55e;
+}
+
+.dot-overdue {
+  background: #dc2626;
+}
+
+.dot-defaulted {
+  background: #7f1d1d;
+}
+
+.dot-cancelled {
+  background: #6b7280;
 }
 
 .summary-total-bar {
@@ -750,43 +1139,6 @@
     min-height: 46px;
     width: 100%;
     justify-content: center;
-  }
-
-  .summary-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .summary-card {
-    gap: 0.75rem;
-    padding: 1rem;
-  }
-
-  .summary-icon {
-    min-width: auto;
-  }
-
-  .summary-card:nth-child(2) {
-    grid-column: 1 / -1;
-    flex-direction: row;
-    text-align: left;
-  }
-
-  .summary-card:not(:nth-child(2)) {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .summary-card:not(:nth-child(2)) .summary-icon {
-    width: 40px;
-    height: 40px;
-  }
-
-  .summary-label {
-    font-size: 0.7rem;
-  }
-
-  .summary-value {
-    font-size: 1.35rem;
   }
 
   .dashboard-row .btn {

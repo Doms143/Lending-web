@@ -9,6 +9,7 @@ from app.utils.supabase_service import SupabaseService
 from app.core.config import get_settings
 from app.core.dependencies import get_current_user
 from app.core.exceptions import ApplicationNotFound, GoogleSheetsError
+from app.utils.statuses import APPLICATION_STATUS_PATTERN
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/applications", tags=["applications"], dependencies=[Depends(get_current_user)])
@@ -30,7 +31,7 @@ def get_application_service() -> ApplicationService:
 async def list_applications(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
-    status: Optional[str] = Query(None, pattern="^(pending|approved|rejected)$"),
+    status: Optional[str] = Query(None, pattern=APPLICATION_STATUS_PATTERN),
     service: ApplicationService = Depends(get_application_service)
 ):
     """Get all loan applications with pagination
@@ -38,7 +39,7 @@ async def list_applications(
     Query parameters:
     - skip: Number of records to skip (pagination offset)
     - limit: Number of records to return
-    - status: Filter by status (pending, approved, rejected)
+    - status: Filter by status
     """
     try:
         applications, total = service.get_all_applications(limit=limit, offset=skip, status_filter=status)

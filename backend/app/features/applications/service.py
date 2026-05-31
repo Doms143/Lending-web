@@ -6,6 +6,7 @@ from app.utils.google_sheets_service import GoogleSheetsService
 from app.utils.supabase_service import SupabaseService
 from app.utils.schemas import ApplicationResponse, ApplicationListResponse, DashboardSummary
 from app.core.exceptions import ApplicationNotFound, GoogleSheetsError
+from app.utils.statuses import APPLICATION_STATUSES
 
 logger = logging.getLogger(__name__)
 
@@ -100,9 +101,7 @@ class ApplicationService:
             status_map = {s['app_id']: s for s in all_statuses}
 
             total = len(records)
-            pending = 0
-            approved = 0
-            rejected = 0
+            counts = {status: 0 for status in APPLICATION_STATUSES}
             total_amount = 0.0
 
             for record in records:
@@ -110,20 +109,24 @@ class ApplicationService:
                 status = status_map.get(app_id, {}).get('status', 'pending')
                 amount = self._parse_amount(record.get('amount'))
                 
-                if status == 'pending':
-                    pending += 1
-                elif status == 'approved':
-                    approved += 1
-                elif status == 'rejected':
-                    rejected += 1
+                if status in counts:
+                    counts[status] += 1
                 
                 total_amount += amount
             
             return DashboardSummary(
                 total_applications=total,
-                pending_count=pending,
-                approved_count=approved,
-                rejected_count=rejected,
+                pending_count=counts["pending"],
+                under_review_count=counts["under_review"],
+                approved_count=counts["approved"],
+                rejected_count=counts["rejected"],
+                released_count=counts["released"],
+                active_count=counts["active"],
+                partially_paid_count=counts["partially_paid"],
+                paid_count=counts["paid"],
+                overdue_count=counts["overdue"],
+                defaulted_count=counts["defaulted"],
+                cancelled_count=counts["cancelled"],
                 total_loan_amount=total_amount
             )
         
@@ -211,6 +214,7 @@ class ApplicationService:
             email=record.get('email', ''),
             amount=self._parse_amount(record.get('amount')),
             status=status_data.get('status', 'pending'),
+            borrow_count=int(status_data.get('borrow_count') or 1),
             submitted_at=self._parse_date(record.get('submitted_at')),
             status_updated_at=self._parse_date(status_data.get('status_updated_at'))
         )
@@ -238,6 +242,7 @@ class ApplicationService:
             contact_person_1=record.get('contact_person_1') or {},
             contact_person_2=record.get('contact_person_2'),
             status=status_data.get('status', 'pending'),
+            borrow_count=int(status_data.get('borrow_count') or 1),
             submitted_at=self._parse_date(record.get('submitted_at')),
             status_updated_at=self._parse_date(status_data.get('status_updated_at')),
             admin_notes=status_data.get('admin_notes', ''),

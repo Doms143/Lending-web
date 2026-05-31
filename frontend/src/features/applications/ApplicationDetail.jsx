@@ -6,6 +6,7 @@ import { Icon } from '../../components/Icon'
 import { AuthImage } from '../../components/AuthImage'
 import { AdminActions } from '../admin/AdminActions'
 import { ImageGallery } from './ImageGallery'
+import { getStatusLabel } from '../../utils/statuses'
 import './applications.css'
 
 const emptyApp = {
@@ -16,6 +17,7 @@ const emptyApp = {
   facebook_link: null, instagram_link: null,
   contact_person_1: null, contact_person_2: null,
   images: [], status: 'pending', submitted_at: null,
+  borrow_count: 1,
   admin_notes: '',
 }
 
@@ -104,7 +106,7 @@ export const ApplicationDetail = ({ appId, onBack }) => {
           </div>
         </div>
         <span className={`status-badge status-${a.status}`}>
-          {a.status.charAt(0).toUpperCase() + a.status.slice(1)}
+          {getStatusLabel(a.status)}
         </span>
       </div>
 
@@ -124,6 +126,10 @@ export const ApplicationDetail = ({ appId, onBack }) => {
         <div className="review-summary-item">
           <label>Phone</label>
           <strong>{a.phone_number}</strong>
+        </div>
+        <div className="review-summary-item">
+          <label>Borrow Count</label>
+          <strong>#{a.borrow_count || 1}</strong>
         </div>
         <div className="review-summary-item">
           <label>Images</label>

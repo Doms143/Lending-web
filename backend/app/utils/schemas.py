@@ -2,6 +2,7 @@
 from pydantic import BaseModel, EmailStr, Field
 from typing import Optional, List
 from datetime import datetime
+from app.utils.statuses import APPLICATION_STATUS_PATTERN
 
 
 class ContactPerson(BaseModel):
@@ -60,7 +61,7 @@ class ApplicationCreate(ApplicationBase):
 
 class ApplicationStatusUpdate(BaseModel):
     """Schema for updating application status"""
-    status: str = Field(..., pattern="^(pending|approved|rejected)$")
+    status: str = Field(..., pattern=APPLICATION_STATUS_PATTERN)
     rejection_reason: Optional[str] = None
 
 
@@ -73,6 +74,7 @@ class ApplicationResponse(ApplicationBase):
     """Complete application response"""
     id: str
     status: str = "pending"
+    borrow_count: int = 1
     submitted_at: datetime
     status_updated_at: Optional[datetime] = None
     admin_notes: Optional[str] = None
@@ -89,6 +91,7 @@ class ApplicationListResponse(BaseModel):
     email: str
     amount: float
     status: str
+    borrow_count: int = 1
     submitted_at: datetime
     status_updated_at: Optional[datetime] = None
 
@@ -97,8 +100,16 @@ class DashboardSummary(BaseModel):
     """Dashboard summary statistics"""
     total_applications: int
     pending_count: int
+    under_review_count: int = 0
     approved_count: int
     rejected_count: int
+    released_count: int = 0
+    active_count: int = 0
+    partially_paid_count: int = 0
+    paid_count: int = 0
+    overdue_count: int = 0
+    defaulted_count: int = 0
+    cancelled_count: int = 0
     total_loan_amount: float
 
 

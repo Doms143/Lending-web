@@ -4,12 +4,14 @@ import { ApplicationDetail } from './features/applications/ApplicationDetail'
 import { Dashboard } from './features/admin/Dashboard'
 import { Login } from './features/auth/Login'
 import { Icon } from './components/Icon'
+import { Modal } from './components/Common'
 import './App.css'
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [currentView, setCurrentView] = useState('dashboard')
   const [selectedAppId, setSelectedAppId] = useState(null)
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
 
   useEffect(() => {
     // Check if user is logged in
@@ -24,12 +26,15 @@ function App() {
     setCurrentView('dashboard')
   }
 
-  const handleLogout = () => {
+  const handleLogoutClick = () => setShowLogoutConfirm(true)
+
+  const confirmLogout = () => {
     localStorage.removeItem('authToken')
     localStorage.removeItem('userEmail')
     setIsAuthenticated(false)
     setCurrentView('dashboard')
     setSelectedAppId(null)
+    setShowLogoutConfirm(false)
   }
 
   if (!isAuthenticated) {
@@ -41,7 +46,7 @@ function App() {
       <Navbar 
         currentView={currentView}
         onNavigate={setCurrentView}
-        onLogout={handleLogout}
+        onLogout={handleLogoutClick}
       />
       <MobileBottomNav
         currentView={currentView}
@@ -49,7 +54,7 @@ function App() {
           setCurrentView(view)
           if (view === 'dashboard') setSelectedAppId(null)
         }}
-        onLogout={handleLogout}
+        onLogout={handleLogoutClick}
       />
       
       <main className="app-main">
@@ -86,6 +91,23 @@ function App() {
           )}
         </div>
       </main>
+
+      <Modal
+        isOpen={showLogoutConfirm}
+        onClose={() => setShowLogoutConfirm(false)}
+        title="Confirm Logout"
+        size="sm"
+      >
+        <p>Are you sure you want to log out?</p>
+        <div className="modal-actions">
+          <button className="btn btn-secondary" onClick={() => setShowLogoutConfirm(false)}>
+            Cancel
+          </button>
+          <button className="btn btn-danger" onClick={confirmLogout}>
+            Logout
+          </button>
+        </div>
+      </Modal>
     </div>
   )
 }

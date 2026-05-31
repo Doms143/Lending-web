@@ -15,6 +15,11 @@
   color: var(--color-status-pending-text);
 }
 
+.badge-under_review {
+  background-color: var(--color-status-under-review-bg);
+  color: var(--color-status-under-review-text);
+}
+
 .badge-approved {
   background-color: var(--color-status-approved-bg);
   color: var(--color-status-approved-text);
@@ -23,6 +28,41 @@
 .badge-rejected {
   background-color: var(--color-status-rejected-bg);
   color: var(--color-status-rejected-text);
+}
+
+.badge-released {
+  background-color: var(--color-status-released-bg);
+  color: var(--color-status-released-text);
+}
+
+.badge-active {
+  background-color: var(--color-status-active-bg);
+  color: var(--color-status-active-text);
+}
+
+.badge-partially_paid {
+  background-color: var(--color-status-partially-paid-bg);
+  color: var(--color-status-partially-paid-text);
+}
+
+.badge-paid {
+  background-color: var(--color-status-paid-bg);
+  color: var(--color-status-paid-text);
+}
+
+.badge-overdue {
+  background-color: var(--color-status-overdue-bg);
+  color: var(--color-status-overdue-text);
+}
+
+.badge-defaulted {
+  background-color: var(--color-status-defaulted-bg);
+  color: var(--color-status-defaulted-text);
+}
+
+.badge-cancelled {
+  background-color: var(--color-status-cancelled-bg);
+  color: var(--color-status-cancelled-text);
 }
 
 /* Button */

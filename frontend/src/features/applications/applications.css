@@ -97,6 +97,10 @@
   border-left-color: var(--color-warning);
 }
 
+.table-row.status-under_review-row {
+  border-left-color: #3b82f6;
+}
+
 .table-row.status-approved-row {
   border-left-color: var(--color-success);
 }
@@ -105,8 +109,40 @@
   border-left-color: var(--color-danger);
 }
 
+.table-row.status-released-row {
+  border-left-color: #6366f1;
+}
+
+.table-row.status-active-row {
+  border-left-color: #14b8a6;
+}
+
+.table-row.status-partially_paid-row {
+  border-left-color: #f97316;
+}
+
+.table-row.status-paid-row {
+  border-left-color: #22c55e;
+}
+
+.table-row.status-overdue-row {
+  border-left-color: #dc2626;
+}
+
+.table-row.status-defaulted-row {
+  border-left-color: #7f1d1d;
+}
+
+.table-row.status-cancelled-row {
+  border-left-color: #6b7280;
+}
+
 .table-row.status-pending-row:hover {
   background-color: rgba(245, 158, 11, 0.04);
+}
+
+.table-row.status-under_review-row:hover {
+  background-color: rgba(59, 130, 246, 0.04);
 }
 
 .table-row.status-approved-row:hover {
@@ -115,6 +151,34 @@
 
 .table-row.status-rejected-row:hover {
   background-color: rgba(239, 68, 68, 0.04);
+}
+
+.table-row.status-released-row:hover {
+  background-color: rgba(99, 102, 241, 0.04);
+}
+
+.table-row.status-active-row:hover {
+  background-color: rgba(20, 184, 166, 0.04);
+}
+
+.table-row.status-partially_paid-row:hover {
+  background-color: rgba(249, 115, 22, 0.04);
+}
+
+.table-row.status-paid-row:hover {
+  background-color: rgba(34, 197, 94, 0.04);
+}
+
+.table-row.status-overdue-row:hover {
+  background-color: rgba(220, 38, 38, 0.04);
+}
+
+.table-row.status-defaulted-row:hover {
+  background-color: rgba(127, 29, 29, 0.04);
+}
+
+.table-row.status-cancelled-row:hover {
+  background-color: rgba(107, 114, 128, 0.04);
 }
 
 .col-name {
@@ -362,12 +426,44 @@
   border-left-color: var(--color-warning);
 }
 
+.application-card-under_review {
+  border-left-color: #3b82f6;
+}
+
 .application-card-approved {
   border-left-color: var(--color-success);
 }
 
 .application-card-rejected {
   border-left-color: var(--color-danger);
+}
+
+.application-card-released {
+  border-left-color: #6366f1;
+}
+
+.application-card-active {
+  border-left-color: #14b8a6;
+}
+
+.application-card-partially_paid {
+  border-left-color: #f97316;
+}
+
+.application-card-paid {
+  border-left-color: #22c55e;
+}
+
+.application-card-overdue {
+  border-left-color: #dc2626;
+}
+
+.application-card-defaulted {
+  border-left-color: #7f1d1d;
+}
+
+.application-card-cancelled {
+  border-left-color: #6b7280;
 }
 
 .application-card-top {
